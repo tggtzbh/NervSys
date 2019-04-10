@@ -67,15 +67,15 @@ class memcached extends factory
      *
      * @param string $key
      *
-     * @return string
+     * @return
      */
-    public function get(string $key): string
+    public function get(string $key)
     {
         $memcached = $this->connect();
         $cache     = $memcached->get($this->prefix . $key);
 
         if ($memcached->getResultCode() === \Memcached::RES_NOTFOUND) {
-            $cache = '';
+            $cache = null;
         }
 
         return $cache;
@@ -85,15 +85,88 @@ class memcached extends factory
      * Set cache
      *
      * @param string $key
+     * @param $value
+     * @param int $expiration
+     *
+     * @return bool
+     */
+    public function set(string $key,$value,int $expiration = 0): bool
+    {
+        $result = $this->connect()->set($this->prefix . $key, $value,$expiration);
+
+        unset($key, $value);
+        return $result;
+    }
+
+    /**
+     * Append data to an existing string item
+     *
+     * @param string $key
      * @param string $value
      *
      * @return bool
      */
-    public function set(string $key, string $value): bool
+    public function append(string $key, string $value): bool
     {
-        $result = $this->connect()->set($this->prefix . $key, $value);
+        $result = $this->connect()->append($this->prefix . $key,$value);
+        return $result;
+    }
 
-        unset($key, $value);
+    /**
+     * Prepend data to an existing string item
+     *
+     * @param string $key
+     * @param string $value
+     *
+     * @return bool
+     */
+    public function prepend(string $key, string $value): bool
+    {
+        $result = $this->connect()->prepend($this->prefix . $key,$value);
+        return $result;
+    }
+
+    /**
+     * Delete cache
+     *
+     * @param string $key
+     *
+     * @return bool
+     */
+    public function delete(string $key): bool
+    {
+        $result = $this->connect()->delete($this->prefix . $key);
+        return $result;
+    }
+
+    /**
+     * decrement
+     * Notice:  The element must be numeric
+     *          If the operation would decrease the value below 0, the new value will be 0.
+     *
+     * @param string $key
+     * @param int $offset
+     *
+     * @return int
+     */
+    public function decrement(string $key,int $offset = 1): int
+    {
+        $result = $this->connect()->decrement($this->prefix . $key,$offset);
+        return $result;
+    }
+
+    /**
+     * increment
+     * Notice:  The element must be numeric
+     *
+     * @param string $key
+     * @param int $offset
+     *
+     * @return int
+     */
+    public function increment(string $key,int $offset = 1): int
+    {
+        $result = $this->connect()->increment($this->prefix . $key,$offset);
         return $result;
     }
 }
